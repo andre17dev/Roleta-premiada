@@ -1,0 +1,352 @@
+<div class="resultado" id="resultado"></div><!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roleta de Prêmios</title>
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    }
+    to {
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4);
+    }
+  }
+
+  .container {
+    position: relative;
+    display: inline-block;
+    margin: 20px 0;
+  }
+
+  .roleta {
+    width: 500px;
+    height: 500px;
+    border-radius: 50%;
+    border: 10px solid #fff;
+    box-shadow: 
+      0 0 0 5px #ffd700,
+      0 0 50px rgba(0,0,0,0.5), 
+      0 0 100px rgba(255,255,255,0.2);
+    position: relative;
+    overflow: hidden;
+    transition: transform 4s cubic-bezier(0.25, 0.1, 0.25, 1);
+    background: #fff;
+  }
+
+  .cores {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(
+      #ff6b6b 0% 8.33%, 
+      #4ecdc4 8.33% 16.67%, 
+      #45b7d1 16.67% 25%,
+      #f9ca24 25% 33.33%, 
+      #f0932b 33.33% 41.67%, 
+      #eb4d4b 41.67% 50%,
+      #9b59b6 50% 58.33%,
+      #e74c3c 58.33% 66.67%,
+      #3498db 66.67% 75%,
+      #f39c12 75% 83.33%,
+      #2ecc71 83.33% 91.67%,
+      #e67e22 91.67% 100%
+    );
+    z-index: 1;
+  }
+
+  .setor {
+    position: absolute;
+    width: 50%;
+    height: 50%;
+    top: 50%;
+    left: 50%;
+    transform-origin: 0% 0%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }: flex-start;
+    padding-left: 20px;
+    z-index: 2;
+  }
+
+  .setor span {
+    font-weight: bold;
+    font-size: 16px;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    writing-mode: vertical-lr;
+    letter-spacing: 2px;
+    line-height: 1.2;
+    /* nomes na vertical, uma letra embaixo da outra */
+  }
+
+  .centro {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(45deg, #ffd700, #ffed4e);
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .centro::after {
+    content: '★';
+    font-size: 24px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  .seta {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-top: 40px solid #ffd700;
+    z-index: 5;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+  }
+
+  .seta::after {
+    content: '';
+    position: absolute;
+    top: -38px;
+    left: -20px;
+    width: 0;
+    height: 0;
+    border-left: 20px solid transparent;
+    border-right: 20px solid transparent;
+    border-top: 32px solid #fff;
+  }
+
+  .botao-container {
+    margin-top: 40px;
+  }
+
+  button {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(238, 90, 82, 0.4);
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(238, 90, 82, 0.6);
+    background: linear-gradient(45deg, #ee5a52, #ff6b6b);
+  }
+
+  button:active {
+    transform: translateY(-1px);
+  }
+
+  button:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+
+
+
+  @media (max-width: 600px) {
+    .roleta {
+      width: 350px;
+      height: 350px;
+    }
+    
+    h1 {
+      font-size: 2rem;
+    }
+    
+    .setor span {
+      font-size: 12px;
+      padding: 2px 6px;
+    }
+    
+    button {
+      padding: 12px 30px;
+      font-size: 16px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<h1>🎰 Roleta de Prêmios 🎰</h1>
+
+<div class="container">
+  <div class="roleta" id="roleta">
+    <div class="cores"></div>
+    <div class="setor" style="transform: rotate(0deg);"><span>Bolsa 60%</span></div>
+    <div class="setor" style="transform: rotate(30deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(60deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(90deg);"><span>Bolsa 40%</span></div>
+    <div class="setor" style="transform: rotate(120deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(150deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(180deg);"><span>Bolsa 20%</span></div>
+    <div class="setor" style="transform: rotate(210deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(240deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(270deg);"><span>50 Reais</span></div>
+    <div class="setor" style="transform: rotate(300deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(330deg);"><span>Livro</span></div>
+    <div class="centro"></div>
+  </div>
+  <div class="seta"></div>
+</div>
+
+<div class="botao-container">
+  <button onclick="girar()" id="botaoGirar">🎯 Girar Roleta</button>
+</div>
+
+<div class="resultado" id="resultado"></div>
+
+<script>
+  const roleta = document.getElementById('roleta');
+  const botao = document.getElementById('botaoGirar');
+  
+  const premios = [
+    "Bolsa 60%", "Pirulito", "Livro", "Bolsa 40%", "Pirulito", "Livro",
+    "Bolsa 20%", "Pirulito", "Livro", "50 Reais", "Pirulito", "Livro"
+  ];
+
+  const premiosPrincipais = ["Bolsa 60%", "Bolsa 40%", "Bolsa 20%", "50 Reais"];
+  let contadorGiros = parseInt(localStorage.getItem('contadorGiros') || '0');
+  let premioLiberado = localStorage.getItem('premioLiberado') === 'true';
+
+  let anguloAtual = 0;
+  let girando = false;
+
+  function girar() {
+    if (girando) return;
+    
+    girando = true;
+    botao.disabled = true;
+    botao.textContent = '🌪️ Girando...';
+    
+    contadorGiros++;
+    
+    // Verifica se deve liberar prêmio principal (1 a cada 50 giros)
+    const cicloAtual = Math.floor((contadorGiros - 1) / 50);
+    const posicaoNoCiclo = contadorGiros - (cicloAtual * 50);
+    
+    // Libera prêmio principal apenas uma vez por ciclo de 50 giros
+    if (posicaoNoCiclo === 1) {
+      premioLiberado = false; // Reset no início do ciclo
+    }
+    
+    const setorAngulo = 360 / premios.length;
+    const girosExtras = (6 + Math.random() * 4) * 360;
+    let anguloAleatorio;
+    
+    // Se ainda não liberou prêmio principal neste ciclo e está na segunda metade
+    if (!premioLiberado && posicaoNoCiclo >= 25 && Math.random() < 0.1) {
+      // 10% de chance de liberar prêmio principal na segunda metade do ciclo
+      const setoresPrincipais = premios.map((premio, index) => 
+        premiosPrincipais.includes(premio) ? index : null
+      ).filter(index => index !== null);
+      
+      // Dar probabilidade maior para as bolsas (75%) vs 50 reais (25%)
+      const probabilidadeBolsas = Math.random();
+      let setorEscolhido;
+      
+      if (probabilidadeBolsas < 0.75) {
+        // 75% chance - escolhe uma das bolsas
+        const setoresBolsas = setoresPrincipais.filter(index => 
+          premios[index].includes('Bolsa')
+        );
+        setorEscolhido = setoresBolsas[Math.floor(Math.random() * setoresBolsas.length)];
+      } else {
+        // 25% chance - escolhe 50 reais
+        setorEscolhido = setoresPrincipais.find(index => 
+          premios[index].includes('50 Reais')
+        );
+      }
+      
+      anguloAleatorio = setorEscolhido * setorAngulo + (setorAngulo / 2);
+      premioLiberado = true;
+    } else {
+      // Sorteia apenas entre prêmios comuns (Pirulito e Livro)
+      const setoresComuns = premios.map((premio, index) => 
+        !premiosPrincipais.includes(premio) ? index : null
+      ).filter(index => index !== null);
+      
+      const setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
+      anguloAleatorio = setorEscolhido * setorAngulo + (setorAngulo / 2);
+    }
+    
+    const anguloFinal = girosExtras + anguloAleatorio;
+    anguloAtual += anguloFinal;
+    roleta.style.transform = `rotate(${anguloAtual}deg)`;
+    
+    // Salva estado
+    localStorage.setItem('contadorGiros', contadorGiros.toString());
+    localStorage.setItem('premioLiberado', premioLiberado.toString());
+    
+    setTimeout(() => {
+      girando = false;
+      botao.disabled = false;
+      botao.textContent = '🎯 Girar Roleta';
+    }, 4000);
+  }
+
+  // Animação inicial suave
+  window.addEventListener('load', () => {
+    roleta.style.transform = 'rotate(0deg)';
+  });
+</script>
+
+</body>
+</html>
