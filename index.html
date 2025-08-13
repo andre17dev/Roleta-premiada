@@ -1,4 +1,4 @@
-<div class="resultado" id="resultado"></div><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
@@ -97,20 +97,23 @@
     align-items: center;
     justify-content: center;
     z-index: 2;
-  }: flex-start;
-    padding-left: 20px;
-    z-index: 2;
   }
 
   .setor span {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 14px;
+    font-family: 'Arial Black', 'Helvetica', sans-serif;
     color: #fff;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    text-shadow: 
+      2px 2px 0px rgba(0,0,0,1),
+      -2px -2px 0px rgba(0,0,0,1),
+      2px -2px 0px rgba(0,0,0,1),
+      -2px 2px 0px rgba(0,0,0,1),
+      0px 4px 8px rgba(0,0,0,0.8);
     writing-mode: vertical-lr;
     letter-spacing: 2px;
     line-height: 1.2;
-    /* nomes na vertical, uma letra embaixo da outra */
+    text-transform: uppercase;
   }
 
   .centro {
@@ -199,7 +202,18 @@
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   }
 
-
+  .contador {
+    margin-top: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    background: rgba(255,215,0,0.1);
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 2px solid rgba(255,215,0,0.3);
+    backdrop-filter: blur(10px);
+  }
 
   @media (max-width: 600px) {
     .roleta {
@@ -213,7 +227,7 @@
     
     .setor span {
       font-size: 12px;
-      padding: 2px 6px;
+      letter-spacing: 1px;
     }
     
     button {
@@ -251,98 +265,127 @@
   <button onclick="girar()" id="botaoGirar">🎯 Girar Roleta</button>
 </div>
 
-<div class="resultado" id="resultado"></div>
+<div class="contador">
+  <span id="contadorDisplay">Giros: 0</span>
+</div>
 
 <script>
+  // Elementos DOM
   const roleta = document.getElementById('roleta');
   const botao = document.getElementById('botaoGirar');
+  const contadorDisplay = document.getElementById('contadorDisplay');
   
+  // Configuração dos prêmios
   const premios = [
     "Bolsa 60%", "Pirulito", "Livro", "Bolsa 40%", "Pirulito", "Livro",
     "Bolsa 20%", "Pirulito", "Livro", "50 Reais", "Pirulito", "Livro"
   ];
 
   const premiosPrincipais = ["Bolsa 60%", "Bolsa 40%", "Bolsa 20%", "50 Reais"];
-  let contadorGiros = parseInt(localStorage.getItem('contadorGiros') || '0');
-  let premioLiberado = localStorage.getItem('premioLiberado') === 'true';
 
+  // Variáveis de controle
   let anguloAtual = 0;
   let girando = false;
+
+  // Sistema de controle de probabilidades
+  let contadorGiros = parseInt(localStorage.getItem('contadorGiros') || '0');
+  let premioLiberado = localStorage.getItem('premioLiberado') === 'true';
+  let contadorGiros50Reais = parseInt(localStorage.getItem('contadorGiros50Reais') || '0');
+  let premio50ReaisLiberado = localStorage.getItem('premio50ReaisLiberado') === 'true';
+  
+  // Atualiza display inicial
+  atualizarContador();
+
+  function atualizarContador() {
+    contadorDisplay.textContent = `Giros: ${contadorGiros}`;
+  }
+
+  function salvarEstado() {
+    localStorage.setItem('contadorGiros', contadorGiros.toString());
+    localStorage.setItem('premioLiberado', premioLiberado.toString());
+    localStorage.setItem('contadorGiros50Reais', contadorGiros50Reais.toString());
+    localStorage.setItem('premio50ReaisLiberado', premio50ReaisLiberado.toString());
+  }
+
+  function calcularSetor() {
+    const setorAngulo = 360 / premios.length;
+    
+    // Incrementa contadores
+    contadorGiros++;
+    contadorGiros50Reais++;
+    
+    // Calcula posições nos ciclos
+    const cicloAtual = Math.floor((contadorGiros - 1) / 50);
+    const posicaoNoCiclo = contadorGiros - (cicloAtual * 50);
+    
+    const ciclo50Reais = Math.floor((contadorGiros50Reais - 1) / 100);
+    const posicaoNoCiclo50Reais = contadorGiros50Reais - (ciclo50Reais * 100);
+    
+    // Reset dos ciclos
+    if (posicaoNoCiclo === 1) {
+      premioLiberado = false;
+    }
+    if (posicaoNoCiclo50Reais === 1) {
+      premio50ReaisLiberado = false;
+    }
+
+    let setorEscolhido;
+
+    // Prioridade 1: 50 reais (1 a cada 100 giros)
+    if (!premio50ReaisLiberado && posicaoNoCiclo50Reais >= 50 && Math.random() < 0.05) {
+      setorEscolhido = premios.findIndex(premio => premio.includes('50 Reais'));
+      premio50ReaisLiberado = true;
+    }
+    // Prioridade 2: Bolsas (1 a cada 50 giros)
+    else if (!premioLiberado && posicaoNoCiclo >= 25 && Math.random() < 0.1) {
+      const setoresBolsas = premios.map((premio, index) => 
+        premio.includes('Bolsa') ? index : null
+      ).filter(index => index !== null);
+      
+      setorEscolhido = setoresBolsas[Math.floor(Math.random() * setoresBolsas.length)];
+      premioLiberado = true;
+    }
+    // Default: Prêmios comuns
+    else {
+      const setoresComuns = premios.map((premio, index) => 
+        (premio.includes('Pirulito') || premio.includes('Livro')) ? index : null
+      ).filter(index => index !== null);
+      
+      setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
+    }
+
+    return setorEscolhido * setorAngulo + (setorAngulo / 2);
+  }
 
   function girar() {
     if (girando) return;
     
+    // Inicia giro
     girando = true;
     botao.disabled = true;
     botao.textContent = '🌪️ Girando...';
     
-    contadorGiros++;
-    
-    // Verifica se deve liberar prêmio principal (1 a cada 50 giros)
-    const cicloAtual = Math.floor((contadorGiros - 1) / 50);
-    const posicaoNoCiclo = contadorGiros - (cicloAtual * 50);
-    
-    // Libera prêmio principal apenas uma vez por ciclo de 50 giros
-    if (posicaoNoCiclo === 1) {
-      premioLiberado = false; // Reset no início do ciclo
-    }
-    
-    const setorAngulo = 360 / premios.length;
+    // Calcula ângulo final
     const girosExtras = (6 + Math.random() * 4) * 360;
-    let anguloAleatorio;
+    const anguloAlvo = calcularSetor();
+    const anguloFinal = girosExtras + anguloAlvo;
     
-    // Se ainda não liberou prêmio principal neste ciclo e está na segunda metade
-    if (!premioLiberado && posicaoNoCiclo >= 25 && Math.random() < 0.1) {
-      // 10% de chance de liberar prêmio principal na segunda metade do ciclo
-      const setoresPrincipais = premios.map((premio, index) => 
-        premiosPrincipais.includes(premio) ? index : null
-      ).filter(index => index !== null);
-      
-      // Dar probabilidade maior para as bolsas (75%) vs 50 reais (25%)
-      const probabilidadeBolsas = Math.random();
-      let setorEscolhido;
-      
-      if (probabilidadeBolsas < 0.75) {
-        // 75% chance - escolhe uma das bolsas
-        const setoresBolsas = setoresPrincipais.filter(index => 
-          premios[index].includes('Bolsa')
-        );
-        setorEscolhido = setoresBolsas[Math.floor(Math.random() * setoresBolsas.length)];
-      } else {
-        // 25% chance - escolhe 50 reais
-        setorEscolhido = setoresPrincipais.find(index => 
-          premios[index].includes('50 Reais')
-        );
-      }
-      
-      anguloAleatorio = setorEscolhido * setorAngulo + (setorAngulo / 2);
-      premioLiberado = true;
-    } else {
-      // Sorteia apenas entre prêmios comuns (Pirulito e Livro)
-      const setoresComuns = premios.map((premio, index) => 
-        !premiosPrincipais.includes(premio) ? index : null
-      ).filter(index => index !== null);
-      
-      const setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
-      anguloAleatorio = setorEscolhido * setorAngulo + (setorAngulo / 2);
-    }
-    
-    const anguloFinal = girosExtras + anguloAleatorio;
     anguloAtual += anguloFinal;
     roleta.style.transform = `rotate(${anguloAtual}deg)`;
     
     // Salva estado
-    localStorage.setItem('contadorGiros', contadorGiros.toString());
-    localStorage.setItem('premioLiberado', premioLiberado.toString());
+    salvarEstado();
     
+    // Finaliza giro
     setTimeout(() => {
       girando = false;
       botao.disabled = false;
       botao.textContent = '🎯 Girar Roleta';
+      atualizarContador();
     }, 4000);
   }
 
-  // Animação inicial suave
+  // Animação inicial
   window.addEventListener('load', () => {
     roleta.style.transform = 'rotate(0deg)';
   });
