@@ -322,46 +322,47 @@ function calcularSetor() {
 
   contadorGiros++;
 
-  // Calcula ciclo e posição
+  // Determina ciclo de 70 giros
   const ciclo70 = Math.floor((contadorGiros - 1) / 70);
   const posicaoNoCiclo70 = contadorGiros - (ciclo70 * 70);
 
-  // Define qual prêmio de dinheiro é o alvo do ciclo
-  const premioDinheiroLiberado = (ciclo70 % 2 === 0) ? "R$ 5" : "R$ 10";
+  // Define prêmio de dinheiro do ciclo
+  const premioDinheiro = (ciclo70 % 2 === 0) ? "R$ 5" : "R$ 10";
 
-  // Se ainda não existe controle para este ciclo, cria
+  // Inicializa controle do ciclo se não existir
   if (!dinheiroLiberado[ciclo70]) {
     dinheiroLiberado[ciclo70] = false;
   }
+  if (!premioLiberado) premioLiberado = false;
 
   let setorEscolhido;
 
-  // PRIORIDADE 1: prêmio de dinheiro — só 1 vez por ciclo
-  if (!dinheiroLiberado[ciclo70] && Math.random() < 0.05) {
+  // ---------- PRÊMIO DE DINHEIRO ----------
+  // Sai somente 1 vez por ciclo, por exemplo no giro 50 do ciclo
+  const giroPremioDinheiro = 50;
+  if (!dinheiroLiberado[ciclo70] && posicaoNoCiclo70 === giroPremioDinheiro) {
     const setoresDinheiro = premios
-      .map((premio, index) => premio === premioDinheiroLiberado ? index : null)
+      .map((premio, index) => premio === premioDinheiro ? index : null)
       .filter(index => index !== null);
-
     setorEscolhido = setoresDinheiro[Math.floor(Math.random() * setoresDinheiro.length)];
-    dinheiroLiberado[ciclo70] = true; // marca como já entregue
+    dinheiroLiberado[ciclo70] = true;
     console.log(`💵 PRÊMIO DINHEIRO ${premios[setorEscolhido]} - Giro: ${contadorGiros}`);
   }
-  // PRIORIDADE 2: bolsas raras
-  else if (!premioLiberado && (contadorGiros % 50 >= 35) && Math.random() < 0.05) {
+  // ---------- BOLSAS RARAS ----------
+  // Sai somente 1 vez no ciclo, em giro 35 por exemplo
+  else if (!premioLiberado && posicaoNoCiclo70 === 35) {
     const setoresBolsas = premios
       .map((premio, index) => premio.includes('Bolsa') ? index : null)
       .filter(index => index !== null);
-
     setorEscolhido = setoresBolsas[Math.floor(Math.random() * setoresBolsas.length)];
     premioLiberado = true;
     console.log(`🎯 BOLSA! ${premios[setorEscolhido]} - Giro: ${contadorGiros}`);
   }
-  // PRIORIDADE 3: prêmios comuns
+  // ---------- PRÊMIOS COMUNS ----------
   else {
     const setoresComuns = premios
       .map((premio, index) => (!premio.includes('Bolsa') && !premio.startsWith('R$')) ? index : null)
       .filter(index => index !== null);
-
     setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
   }
 
