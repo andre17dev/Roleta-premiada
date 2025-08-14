@@ -284,6 +284,10 @@
   let anguloAtual = 0;
   let girando = false;
   let contadorGiros = 0;
+  let premiosDinheiroLiberados = {
+    "R$ 5": false,
+    "R$ 10": false
+  };
 
   atualizarDisplay();
 
@@ -298,15 +302,21 @@
     const chance = Math.random() * 100;
     let setorEscolhido;
     
-    // Prêmios de dinheiro - quase impossível (0.1% cada)
-    if (chance < 0.1) {
-      // R$ 5
+    // Sistema especial: R$ 5 e R$ 10 caem apenas 1 vez cada
+    
+    // R$ 5 - cai apenas uma vez (0.1% de chance até sair)
+    if (!premiosDinheiroLiberados["R$ 5"] && chance < 0.1) {
       setorEscolhido = 9; // setor do R$ 5
-    } else if (chance < 0.2) {
-      // R$ 10
-      setorEscolhido = 12; // setor do R$ 10
+      premiosDinheiroLiberados["R$ 5"] = true;
+      console.log("🎉 R$ 5 LIBERADO! Nunca mais vai cair.");
     }
-    // Bolsas - raras (2% cada)
+    // R$ 10 - cai apenas uma vez (0.1% de chance até sair)
+    else if (!premiosDinheiroLiberados["R$ 10"] && chance < 0.2) {
+      setorEscolhido = 12; // setor do R$ 10
+      premiosDinheiroLiberados["R$ 10"] = true;
+      console.log("🎉 R$ 10 LIBERADO! Nunca mais vai cair.");
+    }
+    // Bolsas - sempre possível (2% cada)
     else if (chance < 2.2) {
       setorEscolhido = 0; // Bolsa 60%
     } else if (chance < 4.2) {
@@ -314,7 +324,7 @@
     } else if (chance < 6.2) {
       setorEscolhido = 6; // Bolsa 20%
     }
-    // Prêmios comuns (93.8% do tempo)
+    // Prêmios comuns (restante)
     else {
       const setoresComuns = [1, 2, 4, 5, 7, 8, 10, 11, 13, 14]; // Pirulito e Livro
       setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
