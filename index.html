@@ -70,18 +70,15 @@
     inset: 0;
     border-radius: 50%;
     background: conic-gradient(
-      #ff6b6b 0% 8.33%, 
-      #4ecdc4 8.33% 16.67%, 
-      #45b7d1 16.67% 25%,
-      #f9ca24 25% 33.33%, 
-      #f0932b 33.33% 41.67%, 
-      #eb4d4b 41.67% 50%,
-      #9b59b6 50% 58.33%,
-      #e74c3c 58.33% 66.67%,
-      #3498db 66.67% 75%,
-      #f39c12 75% 83.33%,
-      #2ecc71 83.33% 91.67%,
-      #e67e22 91.67% 100%
+      #ff6b6b 0% 11.11%, 
+      #4ecdc4 11.11% 22.22%, 
+      #45b7d1 22.22% 33.33%,
+      #f9ca24 33.33% 44.44%, 
+      #f0932b 44.44% 55.56%, 
+      #eb4d4b 55.56% 66.67%,
+      #9b59b6 66.67% 77.78%,
+      #e74c3c 77.78% 88.89%,
+      #3498db 88.89% 100%
     );
     z-index: 1;
   }
@@ -240,17 +237,14 @@
   <div class="roleta" id="roleta">
     <div class="cores"></div>
     <div class="setor" style="transform: rotate(0deg);"><span>Bolsa 60%</span></div>
-    <div class="setor" style="transform: rotate(30deg);"><span>Pirulito</span></div>
-    <div class="setor" style="transform: rotate(60deg);"><span>Livro</span></div>
-    <div class="setor" style="transform: rotate(90deg);"><span>Bolsa 40%</span></div>
-    <div class="setor" style="transform: rotate(120deg);"><span>Pirulito</span></div>
-    <div class="setor" style="transform: rotate(150deg);"><span>Livro</span></div>
-    <div class="setor" style="transform: rotate(180deg);"><span>Bolsa 20%</span></div>
-    <div class="setor" style="transform: rotate(210deg);"><span>Pirulito</span></div>
-    <div class="setor" style="transform: rotate(240deg);"><span>Livro</span></div>
-    <div class="setor" style="transform: rotate(270deg);"><span>50 Reais</span></div>
-    <div class="setor" style="transform: rotate(300deg);"><span>Pirulito</span></div>
-    <div class="setor" style="transform: rotate(330deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(40deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(80deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(120deg);"><span>Bolsa 40%</span></div>
+    <div class="setor" style="transform: rotate(160deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(200deg);"><span>Livro</span></div>
+    <div class="setor" style="transform: rotate(240deg);"><span>Bolsa 20%</span></div>
+    <div class="setor" style="transform: rotate(280deg);"><span>Pirulito</span></div>
+    <div class="setor" style="transform: rotate(320deg);"><span>Livro</span></div>
     <div class="centro"></div>
   </div>
   <div class="seta"></div>
@@ -270,13 +264,13 @@
   const botao = document.getElementById('botaoGirar');
   const contadorDisplay = document.getElementById('contadorDisplay');
   
-  // Configuração dos prêmios
+  // Configuração dos prêmios (deve corresponder exatamente aos setores visuais)
   const premios = [
     "Bolsa 60%", "Pirulito", "Livro", "Bolsa 40%", "Pirulito", "Livro",
-    "Bolsa 20%", "Pirulito", "Livro", "50 Reais", "Pirulito", "Livro"
+    "Bolsa 20%", "Pirulito", "Livro"
   ];
 
-  const premiosPrincipais = ["Bolsa 60%", "Bolsa 40%", "Bolsa 20%", "50 Reais"];
+  const premiosPrincipais = ["Bolsa 60%", "Bolsa 40%", "Bolsa 20%"];
 
   // Variáveis de controle
   let anguloAtual = 0;
@@ -285,8 +279,6 @@
   // Sistema de controle de probabilidades
   let contadorGiros = parseInt(localStorage.getItem('contadorGiros') || '0');
   let premioLiberado = localStorage.getItem('premioLiberado') === 'true';
-  let contadorGiros50Reais = parseInt(localStorage.getItem('contadorGiros50Reais') || '0');
-  let premio50ReaisLiberado = localStorage.getItem('premio50ReaisLiberado') === 'true';
   
   // Atualiza display inicial
   atualizarContador();
@@ -298,41 +290,27 @@
   function salvarEstado() {
     localStorage.setItem('contadorGiros', contadorGiros.toString());
     localStorage.setItem('premioLiberado', premioLiberado.toString());
-    localStorage.setItem('contadorGiros50Reais', contadorGiros50Reais.toString());
-    localStorage.setItem('premio50ReaisLiberado', premio50ReaisLiberado.toString());
   }
 
   function calcularSetor() {
     const setorAngulo = 360 / premios.length;
     
-    // Incrementa contadores
+    // Incrementa contador
     contadorGiros++;
-    contadorGiros50Reais++;
     
-    // Calcula posições nos ciclos
+    // Calcula posição no ciclo
     const cicloAtual = Math.floor((contadorGiros - 1) / 50);
     const posicaoNoCiclo = contadorGiros - (cicloAtual * 50);
     
-    const ciclo50Reais = Math.floor((contadorGiros50Reais - 1) / 100);
-    const posicaoNoCiclo50Reais = contadorGiros50Reais - (ciclo50Reais * 100);
-    
-    // Reset dos ciclos
+    // Reset do ciclo
     if (posicaoNoCiclo === 1) {
       premioLiberado = false;
-    }
-    if (posicaoNoCiclo50Reais === 1) {
-      premio50ReaisLiberado = false;
     }
 
     let setorEscolhido;
 
-    // Prioridade 1: 50 reais (1 a cada 100 giros)
-    if (!premio50ReaisLiberado && posicaoNoCiclo50Reais >= 50 && Math.random() < 0.05) {
-      setorEscolhido = premios.findIndex(premio => premio.includes('50 Reais'));
-      premio50ReaisLiberado = true;
-    }
-    // Prioridade 2: Bolsas (1 a cada 50 giros)
-    else if (!premioLiberado && posicaoNoCiclo >= 25 && Math.random() < 0.1) {
+    // Bolsas (1 a cada 50 giros)
+    if (!premioLiberado && posicaoNoCiclo >= 25 && Math.random() < 0.1) {
       const setoresBolsas = premios.map((premio, index) => 
         premio.includes('Bolsa') ? index : null
       ).filter(index => index !== null);
