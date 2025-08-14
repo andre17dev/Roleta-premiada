@@ -213,18 +213,6 @@
     backdrop-filter: blur(10px);
   }
 
-  .debug-info {
-    margin-top: 15px;
-    font-size: 12px;
-    color: rgba(255,255,255,0.7);
-    background: rgba(0,0,0,0.2);
-    padding: 10px;
-    border-radius: 10px;
-    max-width: 500px;
-    text-align: left;
-    font-family: 'Courier New', monospace;
-  }
-
   @media (max-width: 600px) {
     .roleta {
       width: 350px;
@@ -282,7 +270,6 @@
   <span id="contadorDisplay">Giros: 0</span>
 </div>
 
-
 <script>
   const roleta = document.getElementById('roleta');
   const botao = document.getElementById('botaoGirar');
@@ -293,81 +280,48 @@
     "Bolsa 20%", "Pirulito", "Livro", "R$ 5", "Pirulito", "Livro",
     "R$ 10", "Pirulito", "Livro"
   ];
-
-  const premiosPrincipais = ["Bolsa 60%", "Bolsa 40%", "Bolsa 20%"];
   
   let anguloAtual = 0;
   let girando = false;
+  let contadorGiros = 0;
 
-  let contadorGiros = parseInt(localStorage.getItem('contadorGiros') || '0');
-  let premioLiberado = localStorage.getItem('premioLiberado') === 'true';
+  atualizarDisplay();
 
-  // Controle de prêmios de dinheiro por ciclo de 70
-  let dinheiroLiberado = JSON.parse(localStorage.getItem('dinheiroLiberado') || '{}');
-
-  atualizarContador();
-
-  function atualizarContador() {
+  function atualizarDisplay() {
     contadorDisplay.textContent = `Giros: ${contadorGiros}`;
   }
 
-  function salvarEstado() {
-    localStorage.setItem('contadorGiros', contadorGiros.toString());
-    localStorage.setItem('premioLiberado', premioLiberado.toString());
-    localStorage.setItem('dinheiroLiberado', JSON.stringify(dinheiroLiberado));
+  function calcularSetor() {
+    const setorAngulo = 360 / premios.length;
+    contadorGiros++;
+    
+    const chance = Math.random() * 100;
+    let setorEscolhido;
+    
+    // Prêmios de dinheiro - quase impossível (0.1% cada)
+    if (chance < 0.1) {
+      // R$ 5
+      setorEscolhido = 9; // setor do R$ 5
+    } else if (chance < 0.2) {
+      // R$ 10
+      setorEscolhido = 12; // setor do R$ 10
+    }
+    // Bolsas - raras (2% cada)
+    else if (chance < 2.2) {
+      setorEscolhido = 0; // Bolsa 60%
+    } else if (chance < 4.2) {
+      setorEscolhido = 3; // Bolsa 40%
+    } else if (chance < 6.2) {
+      setorEscolhido = 6; // Bolsa 20%
+    }
+    // Prêmios comuns (93.8% do tempo)
+    else {
+      const setoresComuns = [1, 2, 4, 5, 7, 8, 10, 11, 13, 14]; // Pirulito e Livro
+      setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
+    }
+    
+    return setorEscolhido * setorAngulo + (setorAngulo / 2);
   }
-
-function calcularSetor() {
-  const setorAngulo = 360 / premios.length;
-
-  contadorGiros++;
-
-  // Determina ciclo de 70 giros
-  const ciclo70 = Math.floor((contadorGiros - 1) / 70);
-  const posicaoNoCiclo70 = contadorGiros - (ciclo70 * 70);
-
-  // Define prêmio de dinheiro do ciclo
-  const premioDinheiro = (ciclo70 % 2 === 0) ? "R$ 5" : "R$ 10";
-
-  // Inicializa controle do ciclo se não existir
-  if (!dinheiroLiberado[ciclo70]) {
-    dinheiroLiberado[ciclo70] = false;
-  }
-  if (!premioLiberado) premioLiberado = false;
-
-  let setorEscolhido;
-
-  // ---------- PRÊMIO DE DINHEIRO ----------
-  // Sai somente 1 vez por ciclo, por exemplo no giro 50 do ciclo
-  const giroPremioDinheiro = 50;
-  if (!dinheiroLiberado[ciclo70] && posicaoNoCiclo70 === giroPremioDinheiro) {
-    const setoresDinheiro = premios
-      .map((premio, index) => premio === premioDinheiro ? index : null)
-      .filter(index => index !== null);
-    setorEscolhido = setoresDinheiro[Math.floor(Math.random() * setoresDinheiro.length)];
-    dinheiroLiberado[ciclo70] = true;
-    console.log(`💵 PRÊMIO DINHEIRO ${premios[setorEscolhido]} - Giro: ${contadorGiros}`);
-  }
-  // ---------- BOLSAS RARAS ----------
-  // Sai somente 1 vez no ciclo, em giro 35 por exemplo
-  else if (!premioLiberado && posicaoNoCiclo70 === 35) {
-    const setoresBolsas = premios
-      .map((premio, index) => premio.includes('Bolsa') ? index : null)
-      .filter(index => index !== null);
-    setorEscolhido = setoresBolsas[Math.floor(Math.random() * setoresBolsas.length)];
-    premioLiberado = true;
-    console.log(`🎯 BOLSA! ${premios[setorEscolhido]} - Giro: ${contadorGiros}`);
-  }
-  // ---------- PRÊMIOS COMUNS ----------
-  else {
-    const setoresComuns = premios
-      .map((premio, index) => (!premio.includes('Bolsa') && !premio.startsWith('R$')) ? index : null)
-      .filter(index => index !== null);
-    setorEscolhido = setoresComuns[Math.floor(Math.random() * setoresComuns.length)];
-  }
-
-  return setorEscolhido * setorAngulo + (setorAngulo / 2);
-}
 
   function girar() {
     if (girando) return;
@@ -376,28 +330,25 @@ function calcularSetor() {
     botao.disabled = true;
     botao.textContent = '🌪️ Girando...';
     
-    const girosExtras = (6 + Math.random() * 4) * 360;
     const anguloAlvo = calcularSetor();
+    const girosExtras = (6 + Math.random() * 4) * 360;
     const anguloFinal = girosExtras + anguloAlvo;
     
     anguloAtual += anguloFinal;
     roleta.style.transform = `rotate(${anguloAtual}deg)`;
     
-    salvarEstado();
-    
     setTimeout(() => {
       girando = false;
       botao.disabled = false;
       botao.textContent = '🎯 Girar Roleta';
-      atualizarContador();
+      atualizarDisplay();
     }, 4000);
   }
 
   window.addEventListener('load', () => {
-    roleta.style.transform = 'rotate(0deg)';
+    roleta.style.transform = `rotate(${anguloAtual}deg)`;
   });
 </script>
 
-
 </body>
-</html> 
+</html>
